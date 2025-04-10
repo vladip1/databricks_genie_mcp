@@ -2,7 +2,7 @@
 
 This project implements a Model Context Protocol (MCP) server that exposes Databricks Genie API capabilities as tools. It allows you to integrate Databricks' no-code AI/BI assistant features with other applications through a standardized interface, enabling powerful natural language querying of your Databricks data.
 
-For a detailed explanation and example use cases, please see the accompanying [blog post](../genie_mcp_blog.md).
+For a detailed explanation and example use cases, please see the accompanying [blog post](https://medium.com/@AI-on-Databricks/querying-databricks-system-tables-using-ai-bi-genie-and-mcp-fd79dfbcf9e8?source=user_profile_page---------0-------------b8508cc0ff74----------------------).
 
 ## Features
 
@@ -20,7 +20,7 @@ For a detailed explanation and example use cases, please see the accompanying [b
 - Databricks Assistant enabled.
 - CAN USE permission on a Pro or Serverless SQL warehouse.
 - Access to Unity Catalog data relevant to your Genie Space.
-- An MCP-compatible client application, such as [Claude Desktop](https://www.anthropic.com/claude-on-desktop).
+- An MCP-compatible client application, such as [Claude Desktop](https://claude.ai/download).
 
 ## Setup Instructions
 
