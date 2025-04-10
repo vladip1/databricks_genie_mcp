@@ -130,4 +130,8 @@ For more details on configuring Claude Desktop, see the [MCP Quickstart for Clau
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request. 
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+This software is provided under a specific license granted by Databricks, Inc. Please see the [LICENSE](LICENSE) file for the full terms and conditions governing your use of this software. 
