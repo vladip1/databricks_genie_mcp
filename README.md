@@ -118,7 +118,6 @@ For more details on configuring Claude Desktop, see the [MCP Quickstart for Clau
     - Verify the `command` points to a valid Python interpreter.
     - Check Claude Desktop logs (`~/Library/Logs/Claude/` or `%APPDATA%\Claude\logs`). Look for `mcp.log` and `mcp-server-databricks-genie.log`.
     - Try running `python server.py` manually in your terminal from the `genie_api` directory to check for errors.
-- **Missing Genie API**: Confirm Databricks Assistant is enabled.
 - **SQL Execution Errors**: Ensure the service principal or user has CAN USE on a SQL warehouse and access to the relevant Unity Catalog data.
 
 ## Security Considerations
