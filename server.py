@@ -9,8 +9,10 @@ from databricks.sdk import WorkspaceClient
 from auth import get_workspace_client
 
 # Initialize FastMCP server
-mcp = FastMCP("genie")
-
+mcp = FastMCP(
+    name="Databricks Genie MCP Server",
+    port=8000,
+)
 # Initialize Databricks client (will be set in main)
 databricks_client = None
 
@@ -332,4 +334,7 @@ if __name__ == "__main__":
 
     # Initialize and run the server
     print("Starting MCP server with Genie API tools...")
-    mcp.run(transport='stdio') 
+    # mcp.run(transport='stdio') 
+    mcp.run(transport='sse')  # Use insecure=True for local testing; set to False for production)
+    print("MCP server is running. You can now use the Genie API tools.")
+    print("Press Ctrl+C to stop the server.")
