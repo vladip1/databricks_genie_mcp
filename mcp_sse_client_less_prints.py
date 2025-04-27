@@ -1,6 +1,8 @@
 import asyncio
 from pydantic_ai import Agent, CallToolsNode, ModelRequestNode, UserPromptNode
+from mcp.types import TextContent
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart, FunctionToolCallEvent, FunctionToolResultEvent, TextPart
+from pydantic_ai.usage import UsageLimits
 import json
 from pydantic_ai.mcp import MCPServerHTTP
 from history import get_chat_history, store_messages_in_history
@@ -9,6 +11,8 @@ server = MCPServerHTTP(url='http://localhost:8000/sse')
 
 from pydantic_ai.models.bedrock import BedrockConverseModel
 
+# Debug flag - set to True to enable debug prints for all tools
+DEBUG = False
 
 model_name = 'us.anthropic.claude-3-7-sonnet-20250219-v1:0'
 
@@ -42,9 +46,11 @@ async def main():
         # async with agent.run_mcp_servers():  
             # result = await agent.run(user_prompt=user_message, message_history=chat_history)
         # nodes = []
-        prompt = 'Analyze the usage of analytics dashboards that are hosted by EP, provide statistics about the usage of the dashboards per event, which are most used what are they used for and by which partners'
+        # prompt = 'Analyze the usage of analytics dashboards that are hosted by EP, provide statistics about the usage of the dashboards per event, which are most used what are they used for and by which partners'
         
+        prompt = 'provide inforamation about the usage of document entries in KMS. Include information about partners that are using it, adoption patterns, usage trends etc.'
         async with agent.run_mcp_servers():
+            # async with agent.iter(prompt, usage_limits=UsageLimits(request_limit=3)) as agent_run:
             async with agent.iter(prompt) as agent_run:
                 async for node in agent_run:
                     # Print the node type
@@ -61,13 +67,12 @@ async def main():
                         
                     elif isinstance(node, CallToolsNode):
                         # CallToolsNode processes the model's response
-                        print("  Model responded, processing tool calls...")
 
                         # Print token usage information
                         usage = agent_run.ctx.state.usage
                         print(f"  Token Usage: {usage.request_tokens} prompt + {usage.response_tokens} completion = {usage.total_tokens} total tokens")
 
-                                        # Print only the text parts of the model response
+                        # Print only the text parts of the model response
                         text_parts = [part for part in node.model_response.parts if isinstance(part, TextPart)]
                         if text_parts:
                             print("  Model Response Text:")
@@ -80,15 +85,65 @@ async def main():
                                 if isinstance(event, FunctionToolCallEvent):
                                     # Tool input
                                     tool_call = event.part
-                                    args = json.loads(tool_call.args_as_json_str())
-                                    args_str = ", ".join(f"{k}={v!r}" for k, v in args.items())
-                                    print(f"    Tool Input: {tool_call.tool_name}({args_str})")
+                                    tool_name = tool_call.tool_name
+                                    # args = json.loads(tool_call.args_as_json_str())
+                                    
+                                    # # Always print for create_message
+                                    # if tool_name == "create_message":
+                                    #     print(f"  LLM INTENT: {tool_name}")
+                                    #     print(f"  QUERY GENERATED:")
+                                    #     print(f"    {json.dumps(args, indent=2)}")
+                                    # # For other tools, print only if debug is enabled
+                                    # elif DEBUG or tool_name == "get_message_attachment_query_result":
+                                    #     args_str = ", ".join(f"{k}={v!r}" for k, v in args.items())
+                                    #     print(f"    Tool Input: {tool_name}({args_str})")
                                         
                                 elif isinstance(event, FunctionToolResultEvent):
                                     # Tool output
                                     tool_result = event.result
                                     if hasattr(tool_result, 'content'):
-                                        print(f"    Tool Output: {tool_result.tool_name} → {tool_result.content}")
+                                        tool_name = tool_result.tool_name
+                                        text_content = tool_result.content.content[0]
+                                        if isinstance(text_content, TextContent):
+                                            
+
+                                            
+                                            # Always print for get_message_attachment_query_result
+                                            if tool_name == "get_message_attachment_query_result" or \
+                                                tool_name == "create_message" or \
+                                                tool_name == "start_conversation" or \
+                                                tool_name == "get_space":
+                                                print(f" MCP SERVER RESULT:")
+                                                try:
+                                                    # Try to parse and pretty print the JSON content
+                                                    result_content = json.loads(text_content.text)
+                                                    print(f"    {json.dumps(result_content, indent=2)}")
+                                                except:
+                                                    # If not valid JSON, print as is
+                                                    print(f"    {tool_result.content.text}")
+                                            # Always print for create_message
+                                            # elif tool_name == "create_message":
+                                            #     print(f"  CREATE_MESSAGE RESULT:")
+                                            #     try:
+                                            #         # Try to parse and pretty print the JSON content
+                                            #         result_content = json.loads(text_content.text)
+                                            #         print(f"    {json.dumps(result_content, indent=2)}")
+                                            #     except:
+                                            #         # If not valid JSON, print as is
+                                            #         print(f"    {tool_result.content.text}")
+                                            # elif tool_name == "start_conversation":
+                                            #     print(f"  START_CONVERSATION RESULT:")
+                                                
+                                            #     try:
+                                            #         # Try to parse and pretty print the JSON content
+                                            #         result_content = json.loads(text_content.text) 
+                                            #         print(f"    {json.dumps(result_content, indent=2)}")
+                                            #     except:
+                                            #         # If not valid JSON, print as is
+                                            #         print(f"    {tool_result.content.text}")
+                                            # For other tools, print only if debug is enabled
+                                            elif DEBUG:
+                                                print(f"    Tool Output: {tool_name} → {text_content.text}")
                     
                     elif agent.is_end_node(node):
                         # End node contains the final result
@@ -98,6 +153,8 @@ async def main():
             
             print("Agent run complete!")
             print(f"Final Output: {agent_run.result.output}")
+            print(f"Final Usage: {agent_run.result.usage.usage}")
+            exit()
 
         #     nodes = []
         #     # Iterate through the run, recording each node along the way:
