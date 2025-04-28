@@ -105,6 +105,10 @@ async def main():
                                         tool_name = tool_result.tool_name
                                         text_content = tool_result.content.content[0]
                                         if isinstance(text_content, TextContent):
+
+
+                                            print(f"Tool name: {tool_name}")
+                                            # Print the tool name and its output
                                             
 
                                             
