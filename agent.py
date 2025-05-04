@@ -124,7 +124,7 @@ async def main():
                                                     print(f"    {json.dumps(result_content, indent=2)}")
                                                 except:
                                                     # If not valid JSON, print as is
-                                                    print(f"    {tool_result.content.text}")
+                                                    print(f"    {tool_result.content}")
                                             # Always print for create_message
                                             # elif tool_name == "create_message":
                                             #     print(f"  CREATE_MESSAGE RESULT:")
