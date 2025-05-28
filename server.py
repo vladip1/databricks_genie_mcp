@@ -2,28 +2,40 @@ from typing import Any, Dict, List, Optional
 import os
 import json
 import time
-from mcp.server.fastmcp import FastMCP
+# from fastapi import FastAPI
+# from mcp.server.fastmcp import FastMCP
+from fastapi import FastAPI
+from fastmcp import FastMCP
 from databricks.sdk import WorkspaceClient
 
 # Import authentication utilities
 from auth import get_workspace_client
 
-# Initialize FastMCP server
-mcp = FastMCP(
-    name="Databricks Genie MCP Server",
+# A FastAPI app
+app = FastAPI(    name="Databricks Genie MCP Server",
     port=8000,
+    docs_url="/docs",  # Enable Swagger UI at /docs
+    openapi_url="/openapi.json",  # Path for OpenAPI schema
 )
+
+# Create an MCP server from your FastAPI app
+mcp = FastMCP.from_fastapi(app=app)
+
+
 # Initialize Databricks client (will be set in main)
 databricks_client = None
 
 @mcp.tool()
-async def start_conversation(space_id: str, content: str) -> Dict[str, Any]:
+async def start_conversation(content: str) -> Dict[str, Any]:
     """Start a new conversation in a Genie space.
     
     Args:
-        space_id: The ID associated with the Genie space where you want to start a conversation
-        content: The text of the message that starts the conversation
+        content: The text of the message that starts the conversation, provide the problem and the query and Genie will verify it
     """
+    # Get space_id from environment variable
+    space_id = os.environ.get("DATABRICKS_GENIE_SPACE_ID")
+    if not space_id:
+        return {"error": "DATABRICKS_GENIE_SPACE_ID environment variable is not set"}
     if not databricks_client:
         return {"error": "Databricks client not initialized. Check authentication."}
     
@@ -47,14 +59,17 @@ async def start_conversation(space_id: str, content: str) -> Dict[str, Any]:
         return {"error": f"Error starting conversation: {str(e)}"}
 
 @mcp.tool()
-async def create_message(space_id: str, conversation_id: str, content: str) -> Dict[str, Any]:
+async def create_message(conversation_id: str, content: str) -> Dict[str, Any]:
     """Create a new message in an existing conversation.
     
     Args:
-        space_id: The ID associated with the Genie space where the conversation is located
         conversation_id: The ID of the conversation
         content: The text of the new message
     """
+    # Get space_id from environment variable
+    space_id = os.environ.get("DATABRICKS_GENIE_SPACE_ID")
+    if not space_id:
+        return {"error": "DATABRICKS_GENIE_SPACE_ID environment variable is not set"}
     if not databricks_client:
         return {"error": "Databricks client not initialized. Check authentication."}
     
@@ -75,7 +90,7 @@ async def create_message(space_id: str, conversation_id: str, content: str) -> D
     except Exception as e:
         return {"error": f"Error creating message: {str(e)}"}
 
-@mcp.tool()
+# @mcp.tool()
 async def get_message(space_id: str, conversation_id: str, message_id: str) -> Dict[str, Any]:
     """Get a message from a conversation.
     
@@ -108,7 +123,7 @@ async def get_message(space_id: str, conversation_id: str, message_id: str) -> D
     except Exception as e:
         return {"error": f"Error retrieving message: {str(e)}"}
 
-@mcp.tool()
+# @mcp.tool()
 async def get_message_attachment_query_result(
     space_id: str, 
     conversation_id: str, 
@@ -144,7 +159,52 @@ async def get_message_attachment_query_result(
     except Exception as e:
         return {"error": f"Error retrieving query result: {str(e)}"}
 
-@mcp.tool()
+# SQL tools
+@mcp.tool(
+    name="execute_sql",
+    description="Execute a SQL statement with parameters: statement (required)",
+)
+def execute_sql(params: Dict[str, Any]) -> Dict[str, Any]:
+    # logger.info(f"Executing SQL with params: {params}")
+    try:
+        import requests
+
+        # Replace with your actual Databricks workspace URL and personal access token
+        TOKEN = os.getenv('DATABRICKS_TOKEN')
+
+        # Define the endpoint URL
+        url = f"{os.getenv('DATABRICKS_HOST')}/api/2.0/sql/statements"
+
+        # Set up headers for authentication and content type
+        headers = {
+            "Authorization": f"Bearer {TOKEN}",
+            "Content-Type": "application/json"
+        }
+
+        statement = params['statement']
+        # Define the payload for the SQL statement
+        payload = {
+            "statement": statement,
+            "warehouse_id": os.getenv('DATABRICKS_WORKHOUSE_ID'),
+            "wait_timeout": "50s",
+            "on_wait_timeout": "CANCEL"
+        }
+
+        # Make the POST request
+        response = requests.post(url, headers=headers, json=payload)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            print("Response:", response.json())
+        else:
+            print(f"Request failed with status code {response.status_code}: {response.text}")
+
+        return response.json()
+    except Exception as e:
+        # logger.error(f"Error executing SQL: {str(e)}")
+        return response.json()
+            
+# @mcp.tool()
 async def execute_message_attachment_query(
     space_id: str, 
     conversation_id: str, 
@@ -165,6 +225,7 @@ async def execute_message_attachment_query(
     try:
         # Call the Genie API to execute the query
         genie_api = databricks_client.genie
+        client_api = databricks_client.api_client
         result = genie_api.execute_message_attachment_query(
             space_id, conversation_id, message_id, attachment_id
         )
@@ -180,13 +241,17 @@ async def execute_message_attachment_query(
     except Exception as e:
         return {"error": f"Error executing query: {str(e)}"}
 
-@mcp.tool()
-async def get_space(space_id: str) -> Dict[str, Any]:
+# @mcp.tool()
+async def get_space() -> Dict[str, Any]:
     """Get details of a Genie Space.
     
     Args:
-        space_id: The ID of the Genie space to retrieve details for
+        None: Uses the space ID from environment variable DATABRICKS_GENIE_SPACE_ID
     """
+    # Get space_id from environment variable
+    space_id = os.environ.get("DATABRICKS_GENIE_SPACE_ID")
+    if not space_id:
+        return {"error": "DATABRICKS_GENIE_SPACE_ID environment variable is not set"}
     if not databricks_client:
         return {"error": "Databricks client not initialized. Check authentication."}
     
@@ -205,7 +270,7 @@ async def get_space(space_id: str) -> Dict[str, Any]:
     except Exception as e:
         return {"error": f"Error retrieving space: {str(e)}"}
 
-@mcp.tool()
+# @mcp.tool()
 async def generate_download_full_query_result(
     space_id: str, 
     conversation_id: str, 
@@ -238,7 +303,7 @@ async def generate_download_full_query_result(
     except Exception as e:
         return {"error": f"Error generating download for query result: {str(e)}"}
 
-@mcp.tool()
+# @mcp.tool()
 async def poll_message_until_complete(
     space_id: str,
     conversation_id: str,
@@ -332,9 +397,12 @@ if __name__ == "__main__":
     # Initialize the Databricks client with authentication
     databricks_client = initialize_client()
 
+    # print(execute_sql(''))
+
     # Initialize and run the server
     print("Starting MCP server with Genie API tools...")
     # mcp.run(transport='stdio') 
-    mcp.run(transport='sse')  # Use insecure=True for local testing; set to False for production)
+    mcp.run(transport='sse')  # Enable HTTP for Swagger UI access
     print("MCP server is running. You can now use the Genie API tools.")
+    print("Swagger UI is available at http://localhost:8000/docs")
     print("Press Ctrl+C to stop the server.")
