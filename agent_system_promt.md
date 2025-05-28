@@ -179,7 +179,12 @@ accountId → partnerId → virtualEventId → eventSessionId → kuserId
 - To get total unique viewers across time:  
   Use `user_level_engagement`, filter by `virtualEventId` (and `eventSessionId` if needed)
 
----
+
+## Results Format Outline
+
+- When referring to a specific session, **use the session name if available**; otherwise, **mention the session ID**.
+- When referring to "**high engagement**", **always include a brief explanation or definition** of what constitutes "high engagement".
+
 
 # 📘 Standard Business Terms
 
