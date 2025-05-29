@@ -3,9 +3,6 @@ import os
 import json
 import time
 import logging
-# from fastapi import FastAPI
-# from mcp.server.fastmcp import FastMCP
-from fastapi import FastAPI
 from fastmcp import FastMCP
 from databricks.sdk import WorkspaceClient
 
@@ -19,16 +16,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# A FastAPI app
-app = FastAPI(    name="Databricks MCP Server",
-    port=int(os.getenv('DATABRICKS_MCP_PORT', 8000)),
-    docs_url="/docs",  # Enable Swagger UI at /docs
-    openapi_url="/openapi.json",  # Path for OpenAPI schema
+# Create an MCP server directly
+mcp = FastMCP(
+    name="Databricks MCP Server",
+    port=int(os.getenv('DATABRICKS_MCP_PORT', 8000))
 )
 
-# Create an MCP server from your FastAPI app
-mcp = FastMCP.from_fastapi(app=app)
 
+# Health check endpoint
+@mcp.route("/health")
+def health_check():
+    return {"status": "healthy"}
 
 # SQL tools
 @mcp.tool(
@@ -79,4 +77,4 @@ if __name__ == "__main__":
     logger.info("Initializing Databricks MCP Server...")
     
     # Initialize the Databricks client with authentication
-    mcp.run(transport='sse')  # Enable HTTP for Swagger UI access
+    mcp.run()
