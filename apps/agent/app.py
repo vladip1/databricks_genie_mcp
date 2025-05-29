@@ -58,19 +58,20 @@ app.add_middleware(
 # Initialize Databricks client (will be set in startup event)
 databricks_client = None
 
-# Initialize MCP server connection
+# Initialize MCP server connections
 # Use environment variable with fallback for local development
-mcp_server_url = os.environ.get('MCP_SERVER_URL', 'http://localhost:8000/sse')
-mcp_server = MCPServerHTTP(url=mcp_server_url)
+# MCP_SERVER_URLS can be a comma-separated list of URLs
+mcp_server_urls = os.environ.get('MCP_SERVER_URLS', 'http://localhost:8000/sse')
+mcp_servers = [MCPServerHTTP(url=url.strip()) for url in mcp_server_urls.split(',')]
 
 # Initialize Bedrock model
 model_name = 'us.anthropic.claude-3-7-sonnet-20250219-v1:0'
 model = BedrockConverseModel(model_name)
 
-# Create agent with MCP server
+# Create agent with MCP servers
 agent = Agent(
     model, 
-    mcp_servers=[mcp_server],
+    mcp_servers=mcp_servers,
     instructions=SYSTEM_PROMPT
 )
 
