@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import os
 from typing import Any, Dict, List, Optional, Union, AsyncGenerator
@@ -90,7 +91,7 @@ class ChatCompletionResponse(BaseModel):
     created: int
     model: str
     choices: List[ChatCompletionChoice]
-    usage: ChatCompletionUsage
+    # usage: ChatCompletionUsage
 
 class ChatCompletionChunk(BaseModel):
     id: str
@@ -254,12 +255,12 @@ async def generate_non_streaming_response(prompt: str) -> ChatCompletionResponse
                         ),
                         finish_reason="stop"
                     )
-                ],
-                usage=ChatCompletionUsage(
-                    prompt_tokens=result.usage.usage.request_tokens,
-                    completion_tokens=result.usage.usage.response_tokens,
-                    total_tokens=result.usage.usage.total_tokens
-                )
+                ]
+                # usage=ChatCompletionUsage(
+                #     prompt_tokens=result.usage.usage.request_tokens,
+                #     completion_tokens=result.usage.usage.response_tokens,
+                #     total_tokens=result.usage.usage.total_tokens
+                # )
             )
     
     except Exception as e:
@@ -284,8 +285,25 @@ async def generate_non_streaming_response(prompt: str) -> ChatCompletionResponse
                 total_tokens=0
             )
         )
+    
 
-@app.post("/v1/chat/completions")
+@app.get("/models")
+def list_models():
+    return {
+        "object": "list",
+        "data": [
+            {
+                "id": "Virtual-Events-Expert",
+                "object": "model",
+                "created": int(datetime.datetime.now().timestamp()),
+                "owned_by": "custom-org"
+            }
+        ]
+    }
+
+
+
+@app.post("/chat/completions")
 async def chat_completions(request: ChatCompletionRequest):
     """OpenAI-compatible chat completions endpoint."""
     # Format messages for the agent
