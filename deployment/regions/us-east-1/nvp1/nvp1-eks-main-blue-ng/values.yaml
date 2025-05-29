@@ -1,0 +1,10 @@
+global:
+  cluster: nvp1-eks-main-blue-ng
+
+search:
+  replicas: 2
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: "nvp1-genie-search-alb-blue-ng"
+      external-dns.alpha.kubernetes.io/hostname: "genie-search-blue-ng.nvp1.ovp.kaltura.prod"
+      alb.ingress.kubernetes.io/load-balancer-attributes: "access_logs.s3.enabled=true,access_logs.s3.bucket=nvp1-kalt-ovp-awslogs,access_logs.s3.prefix=nvp1-genie-search-alb-blue-ng"

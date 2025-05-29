@@ -1,0 +1,39 @@
+global:
+  environment: frp2
+  image:
+    repository: 082111255551.dkr.ecr.eu-central-1.amazonaws.com
+search:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::082111255551:role/frp2-genie-search-iam-role
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/subnets: "subnet-0a1d8d12c136e442c, subnet-036771b82a5a19fdf, subnet-0609ed14d979b4d9c"
+    spec:
+      rules:
+        - http:
+            paths:
+              - path: /*
+                pathType: ImplementationSpecific
+                backend:
+                  service:
+                    name: frp2-ovp-genie-search-http-service
+                    port:
+                      number: 80
+index-delta:
+  enabled: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::082111255551:role/frp2-genie-search-iam-role
+
+followups-generator:
+  enabled: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::082111255551:role/frp2-genie-search-iam-role
+
+environments:
+  unisphere_server_url: https://unisphere.frp2.ovp.kaltura.com
+  region: eu-central-1
+  env_name: frp2
+  service_partner_id: "-24"

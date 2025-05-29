@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import json
 import os
+import logging
 from typing import Any, Dict, List, Optional, Union, AsyncGenerator
 
 from fastapi import FastAPI, Request, Depends, HTTPException, BackgroundTasks
@@ -17,9 +18,23 @@ from pydantic_ai.usage import UsageLimits
 from pydantic_ai.mcp import MCPServerHTTP
 from pydantic_ai.models.bedrock import BedrockConverseModel
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Read system prompt from file
-with open("agent_system_promt.md", "r") as f:
-    SYSTEM_PROMPT = f.read()
+# Use environment variable with fallback for the system prompt path
+SYSTEM_PROMPT_PATH = os.environ.get('SYSTEM_PROMPT_PATH', 'promts/agent_system_prompt.md')
+try:
+    with open(SYSTEM_PROMPT_PATH, "r") as f:
+        SYSTEM_PROMPT = f.read()
+    logger.info("Loaded system prompt from %s", SYSTEM_PROMPT_PATH)
+except FileNotFoundError:
+    logger.warning("System prompt file not found at %s", SYSTEM_PROMPT_PATH)
+    SYSTEM_PROMPT = "You are a helpful AI assistant."
 
 # Debug flag - set to True to enable debug prints for all tools
 DEBUG = False
@@ -27,7 +42,7 @@ DEBUG = False
 # Initialize FastAPI app
 app = FastAPI(
     title="Databricks Agent Manager",
-    description="OpenAI-compatible API for Databricks Genie",
+    description="OpenAI-compatible API for Databricks",
     version="1.0.0",
 )
 
@@ -44,7 +59,9 @@ app.add_middleware(
 databricks_client = None
 
 # Initialize MCP server connection
-mcp_server = MCPServerHTTP(url='http://localhost:8000/sse')
+# Use environment variable with fallback for local development
+mcp_server_url = os.environ.get('MCP_SERVER_URL', 'http://localhost:8000/sse')
+mcp_server = MCPServerHTTP(url=mcp_server_url)
 
 # Initialize Bedrock model
 model_name = 'us.anthropic.claude-3-7-sonnet-20250219-v1:0'
@@ -326,5 +343,5 @@ async def health_check():
     return {"status": "healthy"}
 
 if __name__ == "__main__":
-    print("Starting Databricks Genie Agent Manager...")
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    logger.info("Starting Databricks Agent Manager...")
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv('AGENT_PORT', 8080)))

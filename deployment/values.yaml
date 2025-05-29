@@ -1,0 +1,156 @@
+global:
+  tag: &imageTag "0.1.0"
+  domain_name: ovp-databricks
+  team_name: platform
+  cluster: xxx
+  environment: xxx
+  listenerPorts: '[{ "HTTP": 80 }]'
+  tolerations:
+  - key: "general-apps"
+    operator: "Equal"
+    value: "general-apps"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: nodeAffinity
+            operator: In
+            values:
+            - "general-apps"
+
+agent:
+  replicas: 1
+  enabled: true
+  envFrom:
+    - secretRef:
+        name: ovp-databricks-secrets
+  ingress:
+    annotations:
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/scheme: internal
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/healthcheck-path: /health
+      alb.ingress.kubernetes.io/listen-ports: "{{ .Values.global.listenerPorts | quote }}"
+      external-dns.alpha.kubernetes.io/ttl: "60"
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+      alb.ingress.kubernetes.io/success-codes: "200"
+  containers:
+    agent:
+      args: ["/opt/kaltura/databricks/apps/agent/app.py"]
+      image:
+        registry: ovp-databricks
+        tag: *imageTag
+      resources:
+       limits:
+         memory: 520Mi
+         cpu: 500m
+         ephemeralStorage: 10Gi
+       requests:
+         memory: 256Mi
+         cpu: 250m
+         ephemeralStorage: 10Gi
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        periodSeconds: 60
+        timeoutSeconds: 20
+        initialDelaySeconds: 5
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+  app_name: agent
+  annotations:
+    secret.reloader.stakater.com/reload: "ovp-databricks-secrets"
+    osis-pipeline: ms2
+    vector.dev/s3: 'true'
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: xxx
+  service:
+    http:
+      type: ClusterIP
+      ports:
+      - name: agent-port
+        protocol: TCP
+        port: 80
+        targetPort: 8080
+
+databricks-mcp:
+  replicas: 1
+  enabled: true
+  envFrom:
+    - secretRef:
+        name: ovp-databricks-secrets
+  ingress:
+    annotations:
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/scheme: internal
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/healthcheck-path: /docs
+      alb.ingress.kubernetes.io/listen-ports: "{{ .Values.global.listenerPorts | quote }}"
+      external-dns.alpha.kubernetes.io/ttl: "60"
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+      alb.ingress.kubernetes.io/success-codes: "200"
+  containers:
+    databricks-mcp:
+      args: ["/opt/kaltura/databricks/apps/databricks-mcp/app.py"]
+      image:
+        registry: ovp-databricks
+        tag: *imageTag
+      resources:
+       limits:
+         memory: 520Mi
+         cpu: 500m
+         ephemeralStorage: 10Gi
+       requests:
+         memory: 256Mi
+         cpu: 250m
+         ephemeralStorage: 10Gi
+  app_name: databricks-mcp
+  annotations:
+    secret.reloader.stakater.com/reload: "ovp-databricks-secrets"
+    osis-pipeline: ms2
+    vector.dev/s3: 'true'
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: xxx
+  service:
+    http:
+      type: ClusterIP
+      ports:
+      - name: databricks-mcp-port
+        protocol: TCP
+        port: 80
+        targetPort: 8000
+
+environments:
+  db_url: xxx
+  db_username: xxx
+  db_password: xxx
+  port: "8000"
+  region: xxx
+  env_name: xxx
+  unisphere_server_url: xxx
+  internal_service_secret: xxx
+  service_url: xxx
+  service_partner_id: "-24"
+  service_partner_admin_secret: xxx
+  redis_host: xxx
+  redis_port: "6379"
+  redis_password: xxx
+  redis_use_ssl: "True"
+  target_region: us-east-1
+  target_embedding_region: us-east-1
+
+  paragraph_generation_model: 'us.anthropic.claude-3-5-sonnet-20240620-v1:0'
+  llm_as_judge_model: 'us.anthropic.claude-3-5-sonnet-20240620-v1:0'
+  shorts_lookup_model: 'us.anthropic.claude-3-5-sonnet-20240620-v1:0'
+  #paragraph_generation_model: 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
+  #llm_as_judge_model: 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
+  #shorts_lookup_model: 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
+  embedding_model: 'amazon.titan-embed-text-v1'
+  PYTHONPATH: "/opt/kaltura/databricks/"

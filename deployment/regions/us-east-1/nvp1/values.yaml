@@ -1,0 +1,39 @@
+global:
+  environment: nvp1
+  image:
+    repository: 583352821080.dkr.ecr.us-east-1.amazonaws.com
+search:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::583352821080:role/nvp1-genie-search-iam-role
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/subnets: "subnet-0046fb34de3e0319d,subnet-0315ebdf7e9e9f658,subnet-0249d54fa94ef8b35,subnet-08158af29527e1d07,subnet-05b5efb0277b4b3fb"
+    spec:
+      rules:
+        - http:
+            paths:
+              - path: /*
+                pathType: ImplementationSpecific
+                backend:
+                  service:
+                    name: nvp1-ovp-genie-search-http-service
+                    port:
+                      number: 80
+followups-generator:
+  enabled: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::583352821080:role/nvp1-genie-search-iam-role
+
+index-delta:
+  enabled: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::583352821080:role/nvp1-genie-search-iam-role
+
+environments:
+  unisphere_server_url: https://unisphere.nvp1.ovp.kaltura.com
+  region: us-east-1
+  env_name: nvp1
+  service_partner_id: "-24"

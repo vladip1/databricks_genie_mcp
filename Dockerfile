@@ -1,0 +1,40 @@
+FROM python:3.11-slim
+
+# Define build arguments for all environment variables
+ARG DATABRICKS_HOST
+ARG DATABRICKS_TOKEN
+ARG DATABRICKS_CLIENT_ID
+ARG DATABRICKS_CLIENT_SECRET
+ARG DATABRICKS_SPACE_ID
+ARG DATABRICKS_WORKHOUSE_ID
+ARG LOG_LEVEL=INFO
+ARG MCP_SERVER_URL=http://mcp-server:8000/sse
+ARG SYSTEM_PROMPT_PATH=promts/agent_system_prompt.md
+# Define the application path argument
+ARG APP_PATH
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+ENV DATABRICKS_HOST=${DATABRICKS_HOST}
+ENV DATABRICKS_TOKEN=${DATABRICKS_TOKEN}
+ENV DATABRICKS_CLIENT_ID=${DATABRICKS_CLIENT_ID}
+ENV DATABRICKS_CLIENT_SECRET=${DATABRICKS_CLIENT_SECRET}
+ENV DATABRICKS_SPACE_ID=${DATABRICKS_SPACE_ID}
+ENV DATABRICKS_WORKHOUSE_ID=${DATABRICKS_WORKHOUSE_ID}
+ENV LOG_LEVEL=${LOG_LEVEL}
+ENV MCP_SERVER_URL=${MCP_SERVER_URL}
+ENV SYSTEM_PROMPT_PATH=${SYSTEM_PROMPT_PATH}
+
+# Run the application specified by APP_PATH
+CMD ["sh", "-c", "python ${APP_PATH}"]

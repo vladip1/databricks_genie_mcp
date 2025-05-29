@@ -1,0 +1,3 @@
+environments:
+  target_region: us-east-1
+  target_embedding_region: us-east-1

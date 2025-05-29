@@ -1,0 +1,6 @@
+environments:
+  target_region: eu-central-1
+  target_embedding_region: eu-central-1
+  paragraph_generation_model: 'eu.anthropic.claude-3-5-sonnet-20240620-v1:0'
+  llm_as_judge_model: 'eu.anthropic.claude-3-5-sonnet-20240620-v1:0'
+  shorts_lookup_model: 'eu.anthropic.claude-3-5-sonnet-20240620-v1:0'

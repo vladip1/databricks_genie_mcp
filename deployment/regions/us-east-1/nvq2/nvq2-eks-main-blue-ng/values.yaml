@@ -1,0 +1,12 @@
+global:
+  cluster: nvq2-eks-main-blue-ng
+search:
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: "nvq2-genie-search-alb-blue-ng"
+      external-dns.alpha.kubernetes.io/hostname: "genie-search-blue-ng.nvq2.ovp.kaltura.prod"
+
+golddata:
+  ingress:
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: "genie-golddata-blue-ng.nvq2.ovp.kaltura.prod"

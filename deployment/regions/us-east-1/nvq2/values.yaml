@@ -1,0 +1,78 @@
+global:
+  environment: nvq2
+  genie_url: "nvq2-ovp-genie-search-http-service"
+  tag: &imageTag "6ad17ff"
+  image:
+    repository: 383697330906.dkr.ecr.us-east-1.amazonaws.com
+search:
+  replicas: 2
+  containers:
+    search:
+      image:
+        tag: *imageTag
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::383697330906:role/nvq2-genie-search-iam-role
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/subnets: "subnet-0d0248bf16e6e7e3d,subnet-04bdbf232432ee2f8,subnet-007f81aa04b67b9ff,subnet-063f6cb2f23edbe5a,subnet-0f0a1c0b4cee481c3"
+    spec:
+      rules:
+        - http:
+            paths:
+              - path: /*
+                pathType: ImplementationSpecific
+                backend:
+                  service:
+                    name: nvq2-ovp-genie-search-http-service
+                    port:
+                      number: 80
+golddata:
+  enabled: true
+  containers:
+    golddata:
+      image:
+        tag: *imageTag
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::383697330906:role/nvq2-genie-golddata-iam-role
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/subnets: "subnet-0d0248bf16e6e7e3d,subnet-04bdbf232432ee2f8,subnet-007f81aa04b67b9ff,subnet-063f6cb2f23edbe5a,subnet-0f0a1c0b4cee481c3"
+    spec:
+      rules:
+        - http:
+            paths:
+              - path: /*
+                pathType: ImplementationSpecific
+                backend:
+                  service:
+                    name: nvq2-ovp-genie-golddata-http-service
+                    port:
+                      number: 80
+followups-generator:
+  enabled: true
+  containers:
+    followups-generator:
+      image:
+        tag: *imageTag
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::383697330906:role/nvq2-genie-search-iam-role
+index-delta:
+  enabled: true
+  containers:
+    index-delta:
+      image:
+        tag: *imageTag
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::383697330906:role/nvq2-genie-search-iam-role
+environments:
+  db_url: genie-postgresql-rds.nvq2.ovp.kaltura.prod
+  unisphere_server_url: https://unisphere.nvq2.ovp.kaltura.com
+  region: us-east-1
+  env_name: nvq2
+  service_partner_id: "-24"
+  golddata_partner_id: "16372"
+  PYTHONPATH: "/opt/kaltura/genie/"

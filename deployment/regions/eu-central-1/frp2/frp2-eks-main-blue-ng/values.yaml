@@ -1,0 +1,8 @@
+global:
+  cluster: "frp2-eks-main-blue-ng"
+search:
+  enabled: true
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: "frp2-genie-search-alb-blue-ng"
+      external-dns.alpha.kubernetes.io/hostname: "genie-search-blue-ng.frp2.ovp.kaltura.prod"

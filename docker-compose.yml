@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DATABRICKS_HOST=${DATABRICKS_HOST}
+        - DATABRICKS_TOKEN=${DATABRICKS_TOKEN}
+        - DATABRICKS_CLIENT_ID=${DATABRICKS_CLIENT_ID}
+        - DATABRICKS_CLIENT_SECRET=${DATABRICKS_CLIENT_SECRET}
+        - DATABRICKS_SPACE_ID=${DATABRICKS_SPACE_ID}
+        - DATABRICKS_WORKHOUSE_ID=${DATABRICKS_WORKHOUSE_ID}
+        - LOG_LEVEL=${LOG_LEVEL:-INFO}
+        - APP_PATH=apps/databricks-mcp/app.py
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABRICKS_HOST=${DATABRICKS_HOST}
+      - DATABRICKS_TOKEN=${DATABRICKS_TOKEN}
+      - DATABRICKS_CLIENT_ID=${DATABRICKS_CLIENT_ID}
+      - DATABRICKS_CLIENT_SECRET=${DATABRICKS_CLIENT_SECRET}
+      - DATABRICKS_SPACE_ID=${DATABRICKS_SPACE_ID}
+      - DATABRICKS_WORKHOUSE_ID=${DATABRICKS_WORKHOUSE_ID}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  agent-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DATABRICKS_HOST=${DATABRICKS_HOST}
+        - DATABRICKS_TOKEN=${DATABRICKS_TOKEN}
+        - DATABRICKS_CLIENT_ID=${DATABRICKS_CLIENT_ID}
+        - DATABRICKS_CLIENT_SECRET=${DATABRICKS_CLIENT_SECRET}
+        - DATABRICKS_SPACE_ID=${DATABRICKS_SPACE_ID}
+        - DATABRICKS_WORKHOUSE_ID=${DATABRICKS_WORKHOUSE_ID}
+        - LOG_LEVEL=${LOG_LEVEL:-INFO}
+        - MCP_SERVER_URL=http://mcp-server:8000/sse
+        - SYSTEM_PROMPT_PATH=${SYSTEM_PROMPT_PATH:-promts/agent_system_prompt.md}
+        - APP_PATH=apps/agent/app.py
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABRICKS_HOST=${DATABRICKS_HOST}
+      - DATABRICKS_TOKEN=${DATABRICKS_TOKEN}
+      - DATABRICKS_CLIENT_ID=${DATABRICKS_CLIENT_ID}
+      - DATABRICKS_CLIENT_SECRET=${DATABRICKS_CLIENT_SECRET}
+      - DATABRICKS_SPACE_ID=${DATABRICKS_SPACE_ID}
+      - DATABRICKS_WORKHOUSE_ID=${DATABRICKS_WORKHOUSE_ID}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MCP_SERVER_URL=http://mcp-server:8000/sse
+      - SYSTEM_PROMPT_PATH=${SYSTEM_PROMPT_PATH:-promts/agent_system_prompt.md}
+    volumes:
+      - .:/app
+    depends_on:
+      - mcp-server
+    restart: unless-stopped

@@ -1,0 +1,20 @@
+global:
+  cluster: nvp1-eks-main-blue-stg-ng
+  tag: &imageTag "0.1.0"
+search:
+  containers:
+    search:
+      image:
+        tag: *imageTag
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: "nvp1-geniesearch-alb-blue-stg-ng"
+      external-dns.alpha.kubernetes.io/hostname: "genie-search-blue-stg-ng.nvp1.ovp.kaltura.prod"
+      alb.ingress.kubernetes.io/load-balancer-attributes: "access_logs.s3.enabled=true,access_logs.s3.bucket=nvp1-kalt-ovp-awslogs,access_logs.s3.prefix=nvp1-geniesearch-alb-blue-stg-ng"
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::583352821080:role/nvp1-stg-genie-search-iam-role
+followups-generator:
+  enabled: false
+index-delta:
+  enabled: false

@@ -1,0 +1,42 @@
+global:
+  environment: irp2
+  image:
+    repository: 137576761235.dkr.ecr.eu-west-1.amazonaws.com
+search:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::137576761235:role/irp2-genie-search-iam-role
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/subnets: "subnet-06b0b7b1f5d70d5f4,subnet-0e1eac32941635b5f,subnet-0ca2752ed636c4a3a"
+    spec:
+      rules:
+        - http:
+            paths:
+              - path: /*
+                pathType: ImplementationSpecific
+                backend:
+                  service:
+                    name: irp2-ovp-genie-search-http-service
+                    port:
+                      number: 80
+index-delta:
+  enabled: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::137576761235:role/irp2-genie-search-iam-role
+
+followups-generator:
+  enabled: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::137576761235:role/irp2-genie-search-iam-role
+
+environments:
+  unisphere_server_url: https://unisphere.irp2.ovp.kaltura.com
+  region: eu-west-1
+  env_name: irp2
+  service_partner_id: "-24"
+  AWS_DEFAULT_REGION: eu-central-1
+
+  

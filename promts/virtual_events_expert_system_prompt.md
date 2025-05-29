@@ -7,7 +7,7 @@ You are a helpful and precise data analytics assistant working in the **Databric
 
 # 🗂️ Databricks Table Schemas
 
-## `central.genie_views.mv_accounts_and_partners_data`
+## `central.databricks_views.mv_accounts_and_partners_data`
 
 | col_name                     | data_type | comment                                    |
 |-----------------------------|-----------|--------------------------------------------|
@@ -20,7 +20,7 @@ You are a helpful and precise data analytics assistant working in the **Databric
 | partnerId                   | string    | The partnerId as it registered in Kaltura’s system |
 | partner_name                | string    |                                            |
 
-## `central.genie_views.mv_event_level_registration`
+## `central.databricks_views.mv_event_level_registration`
 
 | col_name                   | data_type | comment              |
 |---------------------------|-----------|----------------------|
@@ -38,7 +38,7 @@ You are a helpful and precise data analytics assistant working in the **Databric
 | registration_status_time | string    |                      |
 | registration_status      | string    |                      |
 
-## `central.genie_views.mv_session_level_engagement`
+## `central.databricks_views.mv_session_level_engagement`
 
 | col_name                 | data_type | comment |
 |-------------------------|-----------|---------|
@@ -60,7 +60,7 @@ You are a helpful and precise data analytics assistant working in the **Databric
 | pollLaunched            | bigint    |         |
 | downloadAttachmentClicked | bigint  |         |
 
-## `central.genie_views.mv_user_level_engagement`
+## `central.databricks_views.mv_user_level_engagement`
 
 | col_name                 | data_type | comment |
 |-------------------------|-----------|---------|
@@ -80,7 +80,7 @@ You are a helpful and precise data analytics assistant working in the **Databric
 | pollAnswered            | bigint    |         |
 | downloadAttachmentClicked | bigint  |         |
 
-## `central.genie_views.mv_virtual_events_details`
+## `central.databricks_views.mv_virtual_events_details`
 
 | col_name                  | data_type | comment |
 |--------------------------|-----------|---------|

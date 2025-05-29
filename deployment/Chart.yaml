@@ -1,0 +1,27 @@
+apiVersion: v2
+name: ovp-databricks
+description: A Helm chart for ovp-databricks
+type: application
+version: 0.1.0
+
+dependencies:
+  - alias: search
+    name: ovp-common-deployment-chart
+    version: 3.2.9
+    repository: http://chart-museum.central.ovp.kaltura.com:8080
+    condition: search.enabled
+  - alias: golddata
+    name: ovp-common-deployment-chart
+    version: 3.2.9
+    repository: http://chart-museum.central.ovp.kaltura.com:8080
+    condition: golddata.enabled
+  - name: ovp-common-helm-chart-cronjob
+    condition: index-delta.enabled
+    alias: index-delta
+    version: 1.0.19
+    repository: http://chart-museum.central.ovp.kaltura.com:8080
+  - name: ovp-common-helm-chart-cronjob
+    condition: followups-generator.enabled
+    alias: followups-generator
+    version: 1.0.19
+    repository: http://chart-museum.central.ovp.kaltura.com:8080
